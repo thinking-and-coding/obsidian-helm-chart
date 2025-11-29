@@ -1,0 +1,58 @@
+# GPU acceleration configuration example for Obsidian Helm Chart
+# This enables hardware video encoding for better performance
+
+# For Intel/AMD VAAPI
+extraEnv:
+  - name: DRINODE
+    value: "/dev/dri/renderD128"  # Check your device with: ls /dev/dri/
+  
+  # Optional: Enable VAAPI for GStreamer
+  # - name: SELKIES_ENCODER
+  #   value: "vah264enc"
+
+# For NVIDIA GPU
+# extraEnv:
+#   - name: NVIDIA_VISIBLE_DEVICES
+#     value: "all"
+#   - name: NVIDIA_DRIVER_CAPABILITIES
+#     value: "all"
+
+# Node selector to schedule on GPU nodes
+nodeSelector:
+  # Intel/AMD GPU node label
+  feature.node.kubernetes.io/pci-0300_1002.present: "true"  # AMD
+  # Or for Intel:
+  # feature.node.kubernetes.io/pci-0300_8086.present: "true"
+  
+  # Or custom label:
+  # gpu: "nvidia"
+
+# Optimize for high performance with GPU
+resources:
+  requests:
+    cpu: 1000m
+    memory: 1Gi
+  limits:
+    cpu: 4000m
+    memory: 4Gi
+
+# Increase shared memory for better GPU performance
+shmSize: 2Gi
+
+# Optimize video encoding settings
+selkies:
+  encoder: "x264enc,vah264enc,nvh264enc"  # Try hardware encoders first
+  framerate: "60"  # Higher framerate for smooth experience
+
+# Persistence configuration
+persistence:
+  size: 20Gi
+
+# Optional: Enable authentication
+# auth:
+#   enabled: true
+#   username: "admin"
+#   password: "CHANGE-THIS"
+
+# Note: For NVIDIA GPU, you may also need to add device plugin and runtime
+# See: https://github.com/NVIDIA/k8s-device-plugin

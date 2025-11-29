@@ -1,0 +1,15 @@
+# Basic configuration example for Obsidian Helm Chart
+# This uses mostly default values with minimal customization
+
+# Reduce storage size for development/testing
+persistence:
+  size: 5Gi
+
+# Optional: Reduce resources for smaller environments
+# resources:
+#   requests:
+#     cpu: 250m
+#     memory: 256Mi
+#   limits:
+#     cpu: 1000m
+#     memory: 1Gi

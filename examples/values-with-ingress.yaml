@@ -1,0 +1,57 @@
+# Ingress configuration example for Obsidian Helm Chart
+# This exposes Obsidian to external access with TLS
+
+# Enable Ingress for external access
+ingress:
+  enabled: true
+  className: "nginx"  # Change to your ingress controller class
+  
+  annotations:
+    # cert-manager for automatic TLS certificate
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # Important: Obsidian uses HTTPS backend
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    
+    # Optional: Increase timeouts for better experience
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    
+    # Optional: Limit request size (for file uploads)
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+  
+  hosts:
+    - host: obsidian.example.com  # Change to your domain
+      paths:
+        - path: /
+          pathType: Prefix
+          port: 3001  # Use HTTPS port
+  
+  tls:
+    - secretName: obsidian-tls
+      hosts:
+        - obsidian.example.com  # Must match host above
+
+# Enable authentication when exposing publicly
+auth:
+  enabled: true
+  username: "admin"
+  password: "CHANGE-THIS-PASSWORD"
+
+# Production-grade resources
+persistence:
+  size: 30Gi
+  storageClass: "fast-ssd"
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+# Optional: For subfolder deployment (e.g., https://example.com/obsidian/)
+# selkies:
+#   subfolder: "/obsidian/"
