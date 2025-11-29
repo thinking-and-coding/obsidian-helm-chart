@@ -200,7 +200,24 @@ selkies:
 # Add any additional Selkies or custom environment variables here
 # For full list of Selkies options, see:
 # https://github.com/linuxserver/docker-baseimage-selkies
-extraEnv: []
+extraEnv:
+  # Default resolution: 1920x1080 (Full HD)
+  # This locks the display resolution for all clients
+  # Remove these to use dynamic resolution based on browser window size
+  - name: SELKIES_MANUAL_WIDTH
+    value: "1920"
+  - name: SELKIES_MANUAL_HEIGHT
+    value: "1080"
+
+  # Other resolution examples:
+  # - name: SELKIES_MANUAL_WIDTH
+  #   value: "2560"
+  # - name: SELKIES_MANUAL_HEIGHT
+  #   value: "1440"
+  # - name: MAX_RES
+  #   value: "3840x2160"
+
+  # Other optional environment variables:
   # - name: SELKIES_AUDIO_ENABLED
   #   value: "true"
   # - name: SELKIES_GAMEPAD_ENABLED

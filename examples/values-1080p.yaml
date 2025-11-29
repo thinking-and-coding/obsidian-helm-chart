@@ -1,0 +1,27 @@
+# Obsidian Helm Chart - 1920x1080 (1080p Full HD) Configuration
+# Use this file to deploy Obsidian with fixed 1920x1080 resolution
+
+# Fixed resolution configuration
+extraEnv:
+  - name: SELKIES_MANUAL_WIDTH
+    value: "1920"
+  - name: SELKIES_MANUAL_HEIGHT
+    value: "1080"
+
+# Optimized resources for 1080p resolution
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+# Enable persistence for Obsidian vault
+persistence:
+  enabled: true
+  size: 10Gi
+
+# Recommended framerate for smooth experience
+selkies:
+  framerate: "30"
