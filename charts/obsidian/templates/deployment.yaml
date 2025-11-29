@@ -1,0 +1,146 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "obsidian.fullname" . }}
+  labels:
+    {{- include "obsidian.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  # Use Recreate strategy because this is a stateful application with ReadWriteOnce PVC
+  # RollingUpdate would fail as only one pod can mount the PVC at a time
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "obsidian.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "obsidian.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "obsidian.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: {{ include "obsidian.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        - name: https
+          containerPort: 3001
+          protocol: TCP
+        env:
+        # Core environment variables
+        - name: PUID
+          value: {{ .Values.env.puid | quote }}
+        - name: PGID
+          value: {{ .Values.env.pgid | quote }}
+        - name: TZ
+          value: {{ .Values.env.timezone | quote }}
+        - name: TITLE
+          value: {{ .Values.env.title | quote }}
+        {{- if .Values.auth.enabled }}
+        {{- if .Values.auth.username }}
+        - name: CUSTOM_USER
+          value: {{ .Values.auth.username | quote }}
+        {{- end }}
+        {{- if .Values.auth.password }}
+        - name: PASSWORD
+          value: {{ .Values.auth.password | quote }}
+        {{- end }}
+        {{- end }}
+        # Selkies environment variables (minimal set)
+        {{- if .Values.selkies.lcAll }}
+        - name: LC_ALL
+          value: {{ .Values.selkies.lcAll | quote }}
+        {{- end }}
+        {{- if .Values.selkies.subfolder }}
+        - name: SUBFOLDER
+          value: {{ .Values.selkies.subfolder | quote }}
+        {{- end }}
+        {{- if .Values.selkies.fileManagerPath }}
+        - name: FILE_MANAGER_PATH
+          value: {{ .Values.selkies.fileManagerPath | quote }}
+        {{- end }}
+        {{- if .Values.selkies.encoder }}
+        - name: SELKIES_ENCODER
+          value: {{ .Values.selkies.encoder | quote }}
+        {{- end }}
+        {{- if .Values.selkies.framerate }}
+        - name: SELKIES_FRAMERATE
+          value: {{ .Values.selkies.framerate | quote }}
+        {{- end }}
+        {{- if .Values.selkies.uiTitle }}
+        - name: SELKIES_UI_TITLE
+          value: {{ .Values.selkies.uiTitle | quote }}
+        {{- end }}
+        {{- if ne .Values.selkies.uiShowLogo nil }}
+        - name: SELKIES_UI_SHOW_LOGO
+          value: {{ .Values.selkies.uiShowLogo | quote }}
+        {{- end }}
+        {{- if ne .Values.selkies.uiShowSidebar nil }}
+        - name: SELKIES_UI_SHOW_SIDEBAR
+          value: {{ .Values.selkies.uiShowSidebar | quote }}
+        {{- end }}
+        # Extra environment variables
+        {{- with .Values.extraEnv }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        volumeMounts:
+        - name: config
+          mountPath: /config
+        - name: shm
+          mountPath: /dev/shm
+        {{- with .Values.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.startupProbe }}
+        startupProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+      - name: config
+        {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ include "obsidian.pvcName" . }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      # Shared memory volume required for Electron/Chromium
+      # Used for browser rendering engine and prevents crashes
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: {{ .Values.shmSize }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,217 @@
+# Default values for obsidian Helm chart
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Number of replicas (should be 1 for stateful applications)
+replicaCount: 1
+
+# Container image configuration
+image:
+  repository: lscr.io/linuxserver/obsidian
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Service account configuration
+serviceAccount:
+  # Specifies whether a service account should be created
+  # Obsidian doesn't need Kubernetes API access, so disabled by default
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod security context
+# fsGroup controls ownership of mounted volumes
+podSecurityContext:
+  fsGroup: 1000
+
+# Security context for the container
+# Maps to PUID/PGID for LinuxServer.io containers
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+
+# Service configuration
+service:
+  type: ClusterIP
+  # HTTP port (limited functionality - WebCodecs not supported)
+  httpPort: 3000
+  # HTTPS port (recommended for full functionality)
+  httpsPort: 3001
+  # Annotations for the service (useful for cloud load balancers)
+  annotations: {}
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  hosts:
+    - host: obsidian.local
+      paths:
+        # Expose HTTPS port (recommended)
+        - path: /
+          pathType: Prefix
+          port: 3001
+        # Optionally expose HTTP port
+        # - path: /http
+        #   pathType: Prefix
+        #   port: 3000
+  tls: []
+  #  - secretName: obsidian-tls
+  #    hosts:
+  #      - obsidian.local
+
+# Resource limits and requests
+# Obsidian is a desktop application and can be resource-intensive
+# These are sensible defaults that can be overridden as needed
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+
+# Persistence configuration for /config volume
+persistence:
+  enabled: true
+  # Storage class for PVC. Empty string "" uses cluster default storage class
+  # Set to "-" to disable dynamic provisioning
+  # storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  # Use an existing PersistentVolumeClaim instead of creating a new one
+  # Useful when migrating data or sharing storage between deployments
+  existingClaim: ""
+  # Annotations for the PVC
+  annotations: {}
+
+# Shared memory size for Electron applications
+# Obsidian uses Electron/Chromium which requires shared memory for rendering
+# Equivalent to Docker's --shm-size parameter
+# Increase if you experience rendering issues or crashes
+shmSize: 1Gi
+
+# Node selector for pod assignment
+nodeSelector: {}
+
+# Tolerations for pod assignment
+tolerations: []
+
+# Affinity for pod assignment
+affinity: {}
+
+# Liveness probe configuration
+# Uses HTTPS endpoint for better health checking
+livenessProbe:
+  httpGet:
+    path: /
+    port: https
+    scheme: HTTPS
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Readiness probe configuration
+# Uses HTTPS endpoint for better health checking
+readinessProbe:
+  httpGet:
+    path: /
+    port: https
+    scheme: HTTPS
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Startup probe configuration (for slow first boot)
+# Allows up to 200 seconds for initial startup (20 failures * 10s period)
+startupProbe:
+  httpGet:
+    path: /
+    port: https
+    scheme: HTTPS
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 20
+
+# Core environment variables
+env:
+  # User ID for file ownership (maps to securityContext.runAsUser)
+  puid: "1000"
+  # Group ID for file ownership (maps to securityContext.runAsGroup)
+  pgid: "1000"
+  # Timezone setting
+  timezone: "Etc/UTC"
+  # Application title displayed in browser
+  title: "Obsidian"
+
+# Authentication configuration (optional)
+auth:
+  # Enable basic HTTP authentication
+  enabled: false
+  # Username for basic auth (leave empty to disable)
+  username: ""
+  # Password for basic auth (leave empty to disable)
+  password: ""
+
+# Selkies environment variables (minimal set of commonly used options)
+selkies:
+  # Language/locale setting (e.g., zh_CN.UTF-8, ja_JP.UTF-8)
+  lcAll: ""
+  # Subfolder for reverse proxy (e.g., /subfolder/)
+  subfolder: ""
+  # Custom path for file uploads/downloads (must have proper abc user permissions)
+  fileManagerPath: ""
+  # Video encoder selection (comma-separated list or single value)
+  # Options: x264enc, x264enc-striped, jpeg
+  encoder: "x264enc,x264enc-striped,jpeg"
+  # Framerate range or fixed value (e.g., "8-120" or "60")
+  framerate: "8-120"
+  # UI title in sidebar
+  uiTitle: "Selkies"
+  # Show Selkies logo in sidebar
+  uiShowLogo: true
+  # Show main sidebar UI
+  uiShowSidebar: true
+
+# Extra environment variables
+# Add any additional Selkies or custom environment variables here
+# For full list of Selkies options, see:
+# https://github.com/linuxserver/docker-baseimage-selkies
+extraEnv: []
+  # - name: SELKIES_AUDIO_ENABLED
+  #   value: "true"
+  # - name: SELKIES_GAMEPAD_ENABLED
+  #   value: "true"
+  # - name: CUSTOM_PORT
+  #   value: "3000"
+  # - name: CUSTOM_HTTPS_PORT
+  #   value: "3001"
+  # - name: DISABLE_IPV6
+  #   value: "true"
+  # - name: HARDEN_DESKTOP
+  #   value: "true"
+  # - name: DRINODE
+  #   value: "/dev/dri/renderD128"

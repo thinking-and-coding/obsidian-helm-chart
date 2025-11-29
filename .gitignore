@@ -1,0 +1,13 @@
+# Helm
+*.tgz
+.deploy/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
