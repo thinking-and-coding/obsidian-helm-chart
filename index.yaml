@@ -3,7 +3,33 @@ entries:
   obsidian:
   - apiVersion: v2
     appVersion: latest
-    created: "2025-11-30T02:55:29.658208+08:00"
+    created: "2025-11-30T03:17:41.266079+08:00"
+    description: A Helm chart for deploying Obsidian note-taking application with
+      web-based GUI
+    digest: deda0f395537d454eb127d87a31603c5f56f6ef42742c8ceaadb30e8f2a56ce2
+    home: https://obsidian.md
+    icon: https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/obsidian-logo.png
+    keywords:
+    - obsidian
+    - note-taking
+    - desktop
+    - selkies
+    - web-gui
+    - markdown
+    maintainers:
+    - name: LinuxServer.io
+      url: https://linuxserver.io
+    name: obsidian
+    sources:
+    - https://github.com/obsidianmd/obsidian-releases
+    - https://github.com/linuxserver/docker-obsidian
+    type: application
+    urls:
+    - https://thinking-and-coding.github.io/obsidian-helm-chart/obsidian-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: latest
+    created: "2025-11-30T03:17:41.26551+08:00"
     description: A Helm chart for deploying Obsidian note-taking application with
       web-based GUI
     digest: 130c052124cd8845c21b92f972cf801e89ceab155f934f4ef06ed251b33d00b2
@@ -27,4 +53,4 @@ entries:
     urls:
     - https://thinking-and-coding.github.io/obsidian-helm-chart/obsidian-0.1.0.tgz
     version: 0.1.0
-generated: "2025-11-30T02:55:29.656123+08:00"
+generated: "2025-11-30T03:17:41.264282+08:00"
