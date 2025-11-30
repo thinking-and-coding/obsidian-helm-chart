@@ -11,5 +11,5 @@ spec:
   - name: wget
     image: busybox
     command: ['wget']
-    args: ['{{ include "obsidian.fullname" . }}:{{ .Values.service.httpsPort }}']
+    args: ['--no-check-certificate', '--spider', 'https://{{ include "obsidian.fullname" . }}:{{ .Values.service.httpsPort }}']
   restartPolicy: Never
